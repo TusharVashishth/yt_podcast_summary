@@ -9,13 +9,21 @@ import { gptModal } from "@/lib/langchain";
 import { getServerSession } from "next-auth";
 import { authOptions, CustomSession } from "../auth/[...nextauth]/options";
 import { getUserCoins } from "@/actions/fetchActions";
+import { coinsSpend, minusCoins, updateSummary } from "@/actions/commonActions";
+import prisma from "@/lib/db.config";
+
+interface SummarizePayload {
+  url: string;
+  id: string;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const session: CustomSession | null = await getServerSession(authOptions);
     if (!session) {
       return NextResponse.json({ message: "UnAuthorized" }, { status: 401 });
     }
-    const body = await req.json();
+    const body: SummarizePayload = await req.json();
 
     // * Check if user has sufficient coins or not
     const userConis = await getUserCoins(session?.user?.id!);
@@ -27,6 +35,26 @@ export async function POST(req: NextRequest) {
         },
         { status: 400 }
       );
+    }
+
+    // * Check if is there any summary available for URL
+    const oldSummary = await prisma.summary.findFirst({
+      select: {
+        response: true,
+      },
+      where: {
+        url: body.url,
+      },
+    });
+
+    if (oldSummary != null && oldSummary.response) {
+      // * Do things
+      await minusCoins(session?.user?.id!);
+      await coinsSpend(session?.user?.id!, body?.id!);
+      return NextResponse.json({
+        message: "Podcast video Summary",
+        data: oldSummary.response,
+      });
     }
 
     // * extract video transcript
@@ -59,6 +87,12 @@ export async function POST(req: NextRequest) {
       combinePrompt: summaryPrompt,
     });
     const res = await summaryChain.invoke({ input_documents: docsSummary });
+
+    // * Do things
+    await minusCoins(session?.user?.id!);
+    await coinsSpend(session?.user?.id!, body?.id!);
+    await updateSummary(body?.id!, res?.text);
+
     return NextResponse.json({ message: "Podcast video Summary", data: res });
   } catch (error) {
     console.log("The error is", error);

@@ -4,7 +4,6 @@ import SummarizeLoader from "./SummarizeLoader";
 import axios, { AxiosError } from "axios";
 import { toast } from "sonner";
 import Markdown from "react-markdown";
-import { minusCoins, updateSummary } from "@/actions/commonActions";
 
 export default function SummaryBase({ summary }: { summary: ChatType | null }) {
   const [loading, setLoading] = useState(true);
@@ -17,25 +16,22 @@ export default function SummaryBase({ summary }: { summary: ChatType | null }) {
     } else {
       summarize();
     }
-  }, []);
+  }, [summary]);
 
   const summarize = async () => {
     try {
       if (response.length > 0) {
         setLoading(false);
-        return;
+        return true;
       }
       const { data } = await axios.post("/api/summarize", {
         url: summary?.url,
+        id: summary?.id,
       });
       setLoading(false);
       const res = data?.data;
       if (res) {
         setResponse(res?.text);
-        minusCoins(summary?.user_id!);
-        updateSummary(summary?.id!, res?.text).catch((err) =>
-          toast.error("Something went wrong.while updateing summary")
-        );
       }
     } catch (error) {
       setLoading(false);

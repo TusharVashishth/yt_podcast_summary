@@ -42,6 +42,19 @@ export async function addCoins(
   });
 }
 
+export async function coinsSpend(
+  user_id: string | number,
+  summaryId: string
+): Promise<void> {
+  await prisma.coinSpend.create({
+    data: {
+      user_id: Number(user_id),
+      summary_id: summaryId,
+    },
+  });
+}
+
 export const clearCache = (key: string) => {
   revalidateTag(key);
 };
+
