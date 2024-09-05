@@ -11,9 +11,11 @@ import {
 import UserAvatar from "./UserAvatar";
 import { CustomUser } from "@/app/api/auth/[...nextauth]/options";
 import LogoutModal from "../auth/LogoutModal";
+import { useRouter } from "next/navigation";
 
 export default function ProfileDropdown({ user }: { user: CustomUser | null }) {
   const [open, setOpen] = useState(false);
+  const router = useRouter();
   return (
     <>
       {open && (
@@ -28,7 +30,9 @@ export default function ProfileDropdown({ user }: { user: CustomUser | null }) {
         <DropdownMenuContent>
           <DropdownMenuLabel>My Account</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>Transactions</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => router.push("/transactions")}>
+            Transactions
+          </DropdownMenuItem>
           <DropdownMenuItem>Billing</DropdownMenuItem>
           <DropdownMenuItem onClick={() => setOpen(true)}>
             Logout

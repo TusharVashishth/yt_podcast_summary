@@ -5,6 +5,7 @@ import { getToken } from "next-auth/jwt";
 import prisma from "@/lib/db.config";
 import { Document } from "@langchain/core/documents";
 import { YoutubeLoader } from "@langchain/community/document_loaders/web/youtube";
+import { getUserCoins } from "@/actions/fetchActions";
 
 export async function POST(req: NextRequest) {
   const token = await getToken({ req });
@@ -15,6 +16,18 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const validator = vine.compile(summarySchema);
     const payload = await validator.validate(body);
+
+    // * Check if user has sufficient coins or not
+    const userConis = await getUserCoins(payload.user_id);
+    if (userConis === null || (userConis?.coins && userConis.coins < 10)) {
+      return NextResponse.json(
+        {
+          message:
+            "You don't have sufficient coins for summary.Please add your coins.",
+        },
+        { status: 400 }
+      );
+    }
 
     let text: Document<Record<string, any>>[];
     try {

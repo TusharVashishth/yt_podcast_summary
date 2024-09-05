@@ -1,8 +1,37 @@
-import React from "react";
+"use client";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
-export default function Pricing() {
+import { CustomUser } from "@/app/api/auth/[...nextauth]/options";
+import { toast } from "sonner";
+import axios, { AxiosError } from "axios";
+import getStripe from "@/lib/stripe";
+export default function Pricing({ user }: { user?: CustomUser }) {
+  const [loading, setLoading] = useState(false);
+
+  const initiatePayment = async (plan: string) => {
+    if (!user) {
+      toast.error("Please login first.");
+    }
+    setLoading(true);
+    try {
+      const { data } = await axios.post("/api/stripe/session", { plan: plan });
+      if (data?.id) {
+        const stripe = await getStripe();
+        await stripe?.redirectToCheckout({ sessionId: data?.id });
+      }
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      if (error instanceof AxiosError) {
+        toast.error(error?.response?.data?.message);
+      } else {
+        toast.error("Something went wrong.please try again!");
+      }
+    }
+  };
+
   return (
     <section className="py-24">
       <div className="container mx-auto">
@@ -27,7 +56,13 @@ export default function Pricing() {
                 <li>Top Questions Highlight</li>
                 <li>AI-Powered Insights</li>
               </ul>
-              <Button className="mt-4 w-full">Buy Coins</Button>
+              <Button
+                className="mt-4 w-full"
+                onClick={() => initiatePayment("Starter")}
+                disabled={loading}
+              >
+                Buy Coins
+              </Button>
             </CardContent>
           </Card>
 
@@ -47,7 +82,13 @@ export default function Pricing() {
                 <li>Priority Support</li>
                 <li>Get One Podcast Summary Free 🚀</li>
               </ul>
-              <Button className="mt-4 w-full">Buy Coins</Button>
+              <Button
+                className="mt-4 w-full"
+                onClick={() => initiatePayment("Pro")}
+                disabled={loading}
+              >
+                Buy Coins
+              </Button>
             </CardContent>
           </Card>
 
@@ -65,7 +106,13 @@ export default function Pricing() {
                 <li>Dedicated Support</li>
                 <li>Get two Podcast Summary Free 🚀</li>
               </ul>
-              <Button className="mt-4 w-full">Buy Coins</Button>
+              <Button
+                className="mt-4 w-full"
+                onClick={() => initiatePayment("Pro Plus")}
+                disabled={loading}
+              >
+                Buy Coins
+              </Button>
             </CardContent>
           </Card>
         </div>

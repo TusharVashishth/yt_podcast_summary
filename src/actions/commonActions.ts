@@ -1,35 +1,6 @@
 "use server";
 import prisma from "@/lib/db.config";
-
-export async function getUserOldSummaries(
-  id: number
-): Promise<Array<UserSummaries>> {
-  const summaries = await prisma.summary.findMany({
-    where: {
-      user_id: id,
-    },
-    select: {
-      id: true,
-      url: true,
-      created_at: true,
-      title: true,
-    },
-    orderBy: {
-      created_at: "desc",
-    },
-  });
-
-  return summaries;
-}
-
-export async function getSummary(id: string): Promise<ChatType | null> {
-  const summary = await prisma.summary.findUnique({
-    where: {
-      id: id,
-    },
-  });
-  return summary;
-}
+import { revalidateTag, unstable_cache } from "next/cache";
 
 export async function updateSummary(id: string, data: string): Promise<void> {
   await prisma.summary.update({
@@ -41,3 +12,36 @@ export async function updateSummary(id: string, data: string): Promise<void> {
     },
   });
 }
+
+export async function minusCoins(user_id: string | number): Promise<void> {
+  await prisma.user.update({
+    where: {
+      id: Number(user_id),
+    },
+    data: {
+      coins: {
+        decrement: 10,
+      },
+    },
+  });
+}
+
+export async function addCoins(
+  user_id: string | number,
+  coins: number
+): Promise<void> {
+  await prisma.user.update({
+    where: {
+      id: Number(user_id),
+    },
+    data: {
+      coins: {
+        increment: coins,
+      },
+    },
+  });
+}
+
+export const clearCache = (key: string) => {
+  revalidateTag(key);
+};

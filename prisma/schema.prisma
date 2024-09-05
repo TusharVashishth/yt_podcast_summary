@@ -14,28 +14,65 @@ datasource db {
 }
 
 model User {
-  id         Int          @id @default(autoincrement())
-  name       String
-  email      String       @unique
-  image      String?
-  provider   String
-  oauth_id   String
-  created_at DateTime     @default(now())
+  id           Int            @id @default(autoincrement())
+  name         String
+  email        String         @unique
+  image        String?
+  provider     String
+  oauth_id     String
+  coins        Int            @default(50) @db.Integer
+  created_at   DateTime       @default(now())
   Summary      Summary[]
+  CoinSpend    CoinSpend[]
+  Transactions Transactions[]
 
   @@map("users")
 }
 
-
 model Summary {
-  id         String   @id @default(uuid()) @db.Uuid
-  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  id         String      @id @default(uuid()) @db.Uuid
+  user       User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
   user_id    Int
   title      String
   url        String
-  response   String?  @db.Text
-  created_at DateTime @default(now())
+  response   String?     @db.Text
+  created_at DateTime    @default(now())
+  CoinSpend  CoinSpend[]
 
   @@index([created_at, url])
   @@map("chats")
+}
+
+model CoinSpend {
+  id         Int      @id @default(autoincrement())
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id    Int
+  summary    Summary  @relation(fields: [summary_id], references: [id])
+  summary_id String   @db.Uuid
+  created_at DateTime @default(now())
+
+  @@map("coin_spend")
+}
+
+model Transactions {
+  id         String   @id @default(uuid()) @db.Uuid
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id    Int
+  amount     Int      @default(0) @db.Integer
+  status     Int      @default(2) @db.SmallInt
+  created_at DateTime @default(now())
+
+  @@map("transactions")
+}
+
+model Products {
+  id         Int      @id @default(autoincrement())
+  name       String   @unique @db.VarChar(30)
+  price_id   String   @db.VarChar(191)
+  product_id String   @db.VarChar(191)
+  currency   String   @db.VarChar(10)
+  amount     Int
+  created_at DateTime @default(now())
+
+  @@map("products")
 }

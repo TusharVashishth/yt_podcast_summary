@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import vine, { errors } from "@vinejs/vine";
-import { summarySchema } from "@/validations/summaryValidation";
 import { YoutubeLoader } from "@langchain/community/document_loaders/web/youtube";
 import { loadSummarizationChain } from "langchain/chains";
 import { TokenTextSplitter } from "langchain/text_splitter";
@@ -8,14 +6,29 @@ import { Document } from "@langchain/core/documents";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { summaryTemplate } from "@/lib/prompts";
 import { gptModal } from "@/lib/langchain";
-import { getToken } from "next-auth/jwt";
+import { getServerSession } from "next-auth";
+import { authOptions, CustomSession } from "../auth/[...nextauth]/options";
+import { getUserCoins } from "@/actions/fetchActions";
 export async function POST(req: NextRequest) {
   try {
-    const token = await getToken({ req });
-    if (!token) {
+    const session: CustomSession | null = await getServerSession(authOptions);
+    if (!session) {
       return NextResponse.json({ message: "UnAuthorized" }, { status: 401 });
     }
     const body = await req.json();
+
+    // * Check if user has sufficient coins or not
+    const userConis = await getUserCoins(session?.user?.id!);
+    if (userConis === null || (userConis?.coins && userConis.coins < 10)) {
+      return NextResponse.json(
+        {
+          message:
+            "You don't have sufficient coins for summary.Please add your coins.",
+        },
+        { status: 400 }
+      );
+    }
+
     // * extract video transcript
     let text: Document<Record<string, any>>[];
     try {

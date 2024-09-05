@@ -13,7 +13,7 @@ export default async function Home() {
 
       <HeroSection />
 
-      <Pricing />
+      <Pricing user={session?.user} />
 
       <Footer />
     </>
