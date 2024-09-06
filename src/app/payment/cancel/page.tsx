@@ -1,3 +1,4 @@
+import { clearCache } from "@/actions/commonActions";
 import prisma from "@/lib/db.config";
 import Image from "next/image";
 import { notFound } from "next/navigation";
@@ -26,6 +27,7 @@ export default async function CancelTxn({
       id: searchParams["txnId"],
     },
   });
+  clearCache("transactions");
 
   return (
     <div className="h-screen flex justify-center items-center flex-col ">

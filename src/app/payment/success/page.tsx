@@ -30,6 +30,7 @@ export default async function SuccessTxn({
   });
   await addCoins(transaction.user_id, getCoinsFromAmount(transaction.amount));
   clearCache("userCoins");
+  clearCache("transactions");
 
   return (
     <div className="h-screen flex justify-center items-center flex-col ">

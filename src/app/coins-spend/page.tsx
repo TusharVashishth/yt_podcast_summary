@@ -1,13 +1,18 @@
 import React from "react";
 import { authOptions, CustomSession } from "../api/auth/[...nextauth]/options";
 import { getServerSession } from "next-auth";
-import { getTransactions, getUserCoins } from "@/actions/fetchActions";
+import {
+  getCoinsSpend,
+  getTransactions,
+  getUserCoins,
+} from "@/actions/fetchActions";
 import DashNav from "@/components/dashboard/DashNav";
+import Link from "next/link";
 
-export default async function Transactions() {
+export default async function CoinsSpend() {
   const session: CustomSession | null = await getServerSession(authOptions);
   const userCoins = await getUserCoins(session?.user?.id!);
-  const transactins = await getTransactions(session?.user?.id!);
+  const coinsSpends = await getCoinsSpend(session?.user?.id!);
   return (
     <div className="container">
       <DashNav user={session?.user!} userCoins={userCoins} />
@@ -15,29 +20,21 @@ export default async function Transactions() {
         <h1 className="text-2xl font-bold mb-4">Transactions History</h1>
 
         <div className="flex justify-center items-center space-y-6 flex-col">
-          {transactins &&
-            transactins.length > 0 &&
-            transactins.map((item, index) => (
+          {coinsSpends &&
+            coinsSpends.length > 0 &&
+            coinsSpends.map((item, index) => (
               <div
                 className="w-full text-left md:w-[500px] rounded-md p-4 border border-dashed"
                 key={index}
               >
-                <h1>{item.id}</h1>
+                <Link href={`/summarize?id=${item.summary_id}`}>
+                  <h1 className="font-bold my-2">{item.summary?.title}</h1>
+                </Link>
+
                 <p className="my-2">
-                  Status :
-                  {item.status === 1 ? (
-                    <span className="bg-green-400 text-black text-sm p-1 px-2 rounded-lg">
-                      Success
-                    </span>
-                  ) : (
-                    <span className="bg-red-400 text-black text-sm p-1 px-2 rounded-lg">
-                      Declined
-                    </span>
-                  )}
+                  <strong>URL</strong> {item.summary.url}
                 </p>
-                <p>
-                  Amount :<strong>{item.amount}</strong>
-                </p>
+                <p>Created At :- {new Date(item.created_at).toDateString()}</p>
               </div>
             ))}
         </div>
