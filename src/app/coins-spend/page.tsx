@@ -17,7 +17,7 @@ export default async function CoinsSpend() {
     <div className="container">
       <DashNav user={session?.user!} userCoins={userCoins} />
       <div className="text-center w-full">
-        <h1 className="text-2xl font-bold mb-4">Transactions History</h1>
+        <h1 className="text-2xl font-bold mb-4">Coins Spend History</h1>
 
         <div className="flex justify-center items-center space-y-6 flex-col">
           {coinsSpends &&
