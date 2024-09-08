@@ -55,6 +55,7 @@ export default function UrlInput({ user }: { user: CustomUser }) {
           </div>
         )}
       </form>
+      <span className="text-red-500">{errors?.url}</span>
     </div>
   );
 }

@@ -78,7 +78,7 @@ export const getCoinsSpend = unstable_cache(
         },
       },
       orderBy: {
-        created_at: "desc",
+        id: "desc",
       },
     });
   },
