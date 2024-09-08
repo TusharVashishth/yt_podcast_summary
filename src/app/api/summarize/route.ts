@@ -93,7 +93,10 @@ export async function POST(req: NextRequest) {
     await coinsSpend(session?.user?.id!, body?.id!);
     await updateSummary(body?.id!, res?.text);
 
-    return NextResponse.json({ message: "Podcast video Summary", data: res });
+    return NextResponse.json({
+      message: "Podcast video Summary",
+      data: res?.text,
+    });
   } catch (error) {
     console.log("The error is", error);
     return NextResponse.json(

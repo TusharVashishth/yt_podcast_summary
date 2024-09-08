@@ -32,7 +32,7 @@ export default function SummaryBase({ summary }: { summary: ChatType | null }) {
       setLoading(false);
       const res = data?.data;
       if (res) {
-        setResponse(res?.text);
+        setResponse(res);
         clearCache("userCoins");
         clearCache("coinsSpend");
       }
